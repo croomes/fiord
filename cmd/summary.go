@@ -9,6 +9,7 @@ import (
 )
 
 type summaryOptions struct {
+	input  string
 	quiet  bool
 	format string
 }
@@ -32,6 +33,7 @@ table, raw, or a custom Go template.`,
 	}
 
 	flags := cmd.Flags()
+	flags.StringVarP(&opts.input, "input", "i", "", "Input file if not stdin")
 	flags.BoolVarP(&opts.quiet, "quiet", "q", false, "Only display IOPS")
 	flags.StringVar(&opts.format, "format", "table", "Pretty-print report using a Go template")
 
@@ -39,7 +41,17 @@ table, raw, or a custom Go template.`,
 }
 
 func runSummary(opts summaryOptions) error {
-	report, err := fio.Decode(os.Stdin)
+
+	input := os.Stdin
+	if opts.input != "" {
+		var err error
+		input, err = os.Open(opts.input)
+		if err != nil {
+			return err
+		}
+	}
+
+	report, err := fio.Decode(input)
 	if err != nil {
 		return err
 	}

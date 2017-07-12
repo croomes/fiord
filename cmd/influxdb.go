@@ -16,6 +16,7 @@ const (
 )
 
 type influxdbOptions struct {
+	input  string
 	uri    string
 	db     string
 	tags   string
@@ -41,6 +42,7 @@ func newInfluxdbCmd() *cobra.Command {
 	}
 
 	flags := cmd.Flags()
+	flags.StringVarP(&opts.input, "input", "i", "", "Input file if not stdin")
 	flags.BoolVarP(&opts.quiet, "quiet", "q", false, "Only display IOPS")
 	flags.StringVar(&opts.format, "format", "influxdb", "Pretty-print report using a Go template")
 	flags.StringVar(&opts.uri, "uri", DefaultInfluxdbURI, "<scheme>://<ip>:<port> of InfluxDB API")
@@ -51,7 +53,17 @@ func newInfluxdbCmd() *cobra.Command {
 }
 
 func runInfluxdb(opts influxdbOptions) error {
-	report, err := fio.Decode(os.Stdin)
+
+	input := os.Stdin
+	if opts.input != "" {
+		var err error
+		input, err = os.Open(opts.input)
+		if err != nil {
+			return err
+		}
+	}
+
+	report, err := fio.Decode(input)
 	if err != nil {
 		return err
 	}

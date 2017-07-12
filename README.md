@@ -59,6 +59,13 @@ Or, all-in-one:
 fio --output-format=json job1.fio | fiord summary
 ```
 
+You may also specify the input file using `--input <filename>`.  This can be
+useful when using the Docker container:
+
+```bash
+docker run --rm -v `pwd`/data:/data croomes/fiord summary -i /data/input.json
+```
+
 # Backends
 
 ## InfluxDB
@@ -82,3 +89,13 @@ You may specify `--report-url <url>` to include a link to an external report.
 fio --output-format=json job1.fio | fiord taurus > job1.xml
 ```
 
+# Docker
+
+`fiord` can be run as a standalone binary or as a Docker container.  To run in a
+container, you must place the input into a file, and share the directory into
+the container using a volume.  Then, specify the input file when running the
+container:
+
+```bash
+docker run --rm -v `pwd`/data:/data croomes/fiord summary -i /data/input.json
+```

@@ -9,6 +9,7 @@ import (
 )
 
 type taurusOptions struct {
+	input     string
 	reportURL string
 }
 
@@ -31,13 +32,24 @@ with the Jenkins Performance Plugin.`,
 	}
 
 	flags := cmd.Flags()
+	flags.StringVarP(&opts.input, "input", "i", "", "Input file if not stdin")
 	flags.StringVar(&opts.reportURL, "report-url", "", "URL to full report")
 
 	return cmd
 }
 
 func runTaurus(opts taurusOptions) error {
-	report, err := fio.Decode(os.Stdin)
+
+	input := os.Stdin
+	if opts.input != "" {
+		var err error
+		input, err = os.Open(opts.input)
+		if err != nil {
+			return err
+		}
+	}
+
+	report, err := fio.Decode(input)
 	if err != nil {
 		return err
 	}
