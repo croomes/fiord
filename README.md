@@ -8,7 +8,7 @@ Supported Outputs:
 
 - `summary`: Human-readable summary in table, raw, or a custom Go template format.
 - `influxdb`: Sends report data to InfluxDB.
-- `taurus`: Outputs in XML format that the Jenkins Performance Plugin can parse
+- `taurus`: Outputs in XML format that the [Jenkins Performance Plugin](https://wiki.jenkins.io/display/JENKINS/Performance+Plugin) can parse.
 
 ## Usage
 
@@ -37,3 +37,48 @@ Flags:
   -t, --toggle          Help message for toggle
 
 ```
+
+## Input Data
+
+Run `fio` with the `--output-format=json` parameter, and save the output to a
+file.  e.g.:
+
+```bash
+fio --output-format=json job1.fio > job1.json
+```
+
+Then pipe the input into `fiord`:
+
+```bash
+fiord summary < job1.json
+```
+
+Or, all-in-one:
+
+```bash
+fio --output-format=json job1.fio | fiord summary
+```
+
+# Backends
+
+## InfluxDB
+
+The InfluxDB backend posts data directly to InfluxDB.  The database must already
+exist.
+
+```bash
+fio --output-format=json job1.fio | fiord influxdb --uri http://127.0.0.1:8086 --db=fio
+```
+
+## Taurus
+
+Taurus is an XML format supported by the [Jenkins Performance Plugin](https://wiki.jenkins.io/display/JENKINS/Performance+Plugin).
+The XML is written to STDOUT, so you probably want to write to a file within
+your build workspace.
+
+You may specify `--report-url <url>` to include a link to an external report.
+
+```bash
+fio --output-format=json job1.fio | fiord taurus > job1.xml
+```
+
