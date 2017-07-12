@@ -99,3 +99,5 @@ container:
 ```bash
 docker run --rm -v `pwd`/data:/data croomes/fiord summary -i /data/input.json
 ```
+
+The fiord container is available at: https://hub.docker.com/r/croomes/fiord
