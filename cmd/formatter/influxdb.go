@@ -2,6 +2,7 @@ package formatter
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/croomes/fiord/fio"
 )
@@ -28,9 +29,13 @@ func InfluxdbWrite(ctx Context, report fio.Report, tags string) error {
 	if tags != "" {
 		tags = "," + tags
 	}
+	ts := time.Now().UnixNano()
+	if report.Timestamp > 0 {
+		ts = int64(report.Timestamp) * 1000000
+	}
 	render := func(format func(subContext subContext) error) error {
 		for _, job := range report.Jobs {
-			if err := format(&influxdbContext{ts: report.Timestamp, tags: tags, v: job}); err != nil {
+			if err := format(&influxdbContext{ts: ts, tags: tags, v: job}); err != nil {
 				return err
 			}
 		}
@@ -42,7 +47,7 @@ func InfluxdbWrite(ctx Context, report fio.Report, tags string) error {
 type influxdbContext struct {
 	HeaderContext
 	tags string
-	ts   int
+	ts   int64
 	v    fio.Job
 }
 
