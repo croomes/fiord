@@ -1,6 +1,7 @@
 package formatter
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/croomes/fiord/fio"
@@ -48,13 +49,35 @@ type influxdbContext struct {
 }
 
 func (c *influxdbContext) IOPS() string {
-	return fmt.Sprintf("iops,op=read,job=%s%s value=%.2f %d\n", c.v.JobName, c.tags, c.v.Read.IOPS, c.ts) +
-		fmt.Sprintf("iops,op=write,job=%s%s value=%.2f %d\n", c.v.JobName, c.tags, c.v.Write.IOPS, c.ts) +
-		fmt.Sprintf("iops,op=trim,job=%s%s value=%.2f %d\n", c.v.JobName, c.tags, c.v.Trim.IOPS, c.ts)
+
+	var buffer bytes.Buffer
+
+	if c.v.Read.IOPS > 0 {
+		buffer.WriteString(fmt.Sprintf("iops,op=read,job=%s%s value=%.2f %d\n", c.v.JobName, c.tags, c.v.Read.IOPS, c.ts))
+	}
+	if c.v.Write.IOPS > 0 {
+		buffer.WriteString(fmt.Sprintf("iops,op=write,job=%s%s value=%.2f %d\n", c.v.JobName, c.tags, c.v.Write.IOPS, c.ts))
+	}
+	if c.v.Trim.IOPS > 0 {
+		buffer.WriteString(fmt.Sprintf("iops,op=trim,job=%s%s value=%.2f %d\n", c.v.JobName, c.tags, c.v.Trim.IOPS, c.ts))
+	}
+
+	return buffer.String()
 }
 
 func (c *influxdbContext) Bandwidth() string {
-	return fmt.Sprintf("throughput,op=read,job=%s%s value=%d %d\n", c.v.JobName, c.tags, c.v.Read.Bandwidth, c.ts) +
-		fmt.Sprintf("throughput,op=write,job=%s%s value=%d %d\n", c.v.JobName, c.tags, c.v.Write.Bandwidth, c.ts) +
-		fmt.Sprintf("throughput,op=trim,job=%s%s value=%d %d\n", c.v.JobName, c.tags, c.v.Trim.Bandwidth, c.ts)
+
+	var buffer bytes.Buffer
+
+	if c.v.Read.Bandwidth > 0 {
+		buffer.WriteString(fmt.Sprintf("throughput,op=read,job=%s%s value=%d %d\n", c.v.JobName, c.tags, c.v.Read.Bandwidth, c.ts))
+	}
+	if c.v.Write.Bandwidth > 0 {
+		buffer.WriteString(fmt.Sprintf("throughput,op=write,job=%s%s value=%d %d\n", c.v.JobName, c.tags, c.v.Write.Bandwidth, c.ts))
+	}
+	if c.v.Trim.Bandwidth > 0 {
+		buffer.WriteString(fmt.Sprintf("throughput,op=trim,job=%s%s value=%d %d\n", c.v.JobName, c.tags, c.v.Trim.Bandwidth, c.ts))
+	}
+
+	return buffer.String()
 }
