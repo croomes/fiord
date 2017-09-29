@@ -30,7 +30,8 @@ func InfluxdbWrite(ctx Context, report fio.Report, tags string) error {
 	}
 	render := func(format func(subContext subContext) error) error {
 		for _, job := range report.Jobs {
-			if err := format(&influxdbContext{ts: report.Timestamp, tags: tags, v: job}); err != nil {
+			// InfluxDB wants nanosecond timestamps, convert here
+			if err := format(&influxdbContext{ts: report.Timestamp * 1000000000, tags: tags, v: job}); err != nil {
 				return err
 			}
 		}
@@ -42,7 +43,7 @@ func InfluxdbWrite(ctx Context, report fio.Report, tags string) error {
 type influxdbContext struct {
 	HeaderContext
 	tags string
-	ts   int
+	ts   int64
 	v    fio.Job
 }
 

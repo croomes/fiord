@@ -3,7 +3,7 @@ package fio
 // Report is the output of fio when run with `--output-format=json`
 type Report struct {
 	FIOVersion string `json:"fio version"`
-	Timestamp  int    `json:"timestamp"`
+	Timestamp  int64  `json:"timestamp"`
 	Time       string `json:"time"`
 	Jobs       []Job  `json:"jobs"`
 }
