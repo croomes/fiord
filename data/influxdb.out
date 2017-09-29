@@ -1,0 +1,13 @@
+iops,op=read,job=job1 value=2179.88 1499464001000000
+iops,op=write,job=job1 value=0.00 1499464001000000
+iops,op=trim,job=job1 value=0.00 1499464001000000
+throughput,op=read,job=job1 value=8719 1499464001000000
+throughput,op=write,job=job1 value=0 1499464001000000
+throughput,op=trim,job=job1 value=0 1499464001000000
+
+iops,op=read,job=job2 value=5637.04 1499464001000000
+iops,op=write,job=job2 value=0.00 1499464001000000
+iops,op=trim,job=job2 value=0.00 1499464001000000
+throughput,op=read,job=job2 value=22548 1499464001000000
+throughput,op=write,job=job2 value=0 1499464001000000
+throughput,op=trim,job=job2 value=0 1499464001000000
