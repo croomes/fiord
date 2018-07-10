@@ -15,6 +15,7 @@ import (
 const (
 	TableFormatKey  = "table"
 	RawFormatKey    = "raw"
+	CSVFormatKey    = "csv"
 	PrettyFormatKey = "pretty"
 
 	defaultQuietFormat = "{{.ID}}"
@@ -26,6 +27,11 @@ type Format string
 // IsTable returns true if the format is a table-type format
 func (f Format) IsTable() bool {
 	return strings.HasPrefix(string(f), TableFormatKey)
+}
+
+// IsCSV returns true if the format is a table-type format
+func (f Format) IsCSV() bool {
+	return strings.HasPrefix(string(f), CSVFormatKey)
 }
 
 // Contains returns true if the format contains the substring
@@ -55,6 +61,9 @@ func (c *Context) preFormat() {
 	if c.Format.IsTable() {
 		c.finalFormat = c.finalFormat[len(TableFormatKey):]
 	}
+	if c.Format.IsCSV() {
+		c.finalFormat = c.finalFormat[len(CSVFormatKey):]
+	}
 
 	c.finalFormat = strings.Trim(c.finalFormat, " ")
 	r := strings.NewReplacer(`\t`, "\t", `\n`, "\n")
@@ -70,19 +79,29 @@ func (c *Context) parseFormat() (*template.Template, error) {
 }
 
 func (c *Context) postFormat(tmpl *template.Template, subContext subContext) {
-	if c.Format.IsTable() {
+
+	switch {
+	case c.Format.IsTable():
 		if len(c.header) == 0 {
 			// if we still don't have a header, we didn't have any containers so we need to fake it to get the right headers from the template
 			tmpl.Execute(bytes.NewBufferString(""), subContext)
-			c.header = subContext.FullHeader()
+			c.header = subContext.TabHeader()
 		}
-
 		t := tabwriter.NewWriter(c.Output, 20, 1, 3, ' ', 0)
 		t.Write([]byte(c.header))
 		t.Write([]byte("\n"))
 		c.buffer.WriteTo(t)
 		t.Flush()
-	} else {
+	case c.Format.IsCSV():
+		if len(c.header) == 0 {
+			// if we still don't have a header, we didn't have any containers so we need to fake it to get the right headers from the template
+			tmpl.Execute(bytes.NewBufferString(""), subContext)
+			c.header = subContext.CSVHeader()
+		}
+		c.Output.Write([]byte(c.header))
+		c.Output.Write([]byte("\n"))
+		c.buffer.WriteTo(c.Output)
+	default:
 		c.buffer.WriteTo(c.Output)
 	}
 }
@@ -91,8 +110,13 @@ func (c *Context) contextFormat(tmpl *template.Template, subContext subContext) 
 	if err := tmpl.Execute(c.buffer, subContext); err != nil {
 		return fmt.Errorf("template parsing error: %v", err)
 	}
-	if c.Format.IsTable() && len(c.header) == 0 {
-		c.header = subContext.FullHeader()
+	if len(c.header) == 0 {
+		switch {
+		case c.Format.IsTable():
+			c.header = subContext.TabHeader()
+		case c.Format.IsCSV():
+			c.header = subContext.CSVHeader()
+		}
 	}
 	c.buffer.WriteString("\n")
 	return nil

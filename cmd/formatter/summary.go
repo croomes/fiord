@@ -8,11 +8,16 @@ import (
 
 const (
 	defaultSummaryQuietFormat = "{{.IOPS}}"
-	defaultSummaryTableFormat = "table {{.Name}}\t{{.IOPS}}\t{{.Bandwidth}}"
+	defaultSummaryTableFormat = "table {{.Name}}\t{{.IOPS}}\t{{.Throughput}}"
+	defaultSummaryCSVFormat   = "csv {{.Name}},{{.ReadIOPS}},{{.ReadThroughput}},{{.WriteIOPS}},{{.WriteThroughput}}"
 
-	summaryNameHeader      = "JOB NAME"
-	summaryIOPSHeader      = "IO/S R/W/T"
-	summaryBandwidthHeader = "MB/S R/W/T"
+	summaryNameHeader            = "JOB NAME"
+	summaryIOPSHeader            = "IO/S R/W/T"
+	summaryReadIOPSHeader        = "READ IOPS"
+	summaryWriteIOPSHeader       = "WRITE IOPS"
+	summaryThroughputHeader      = "MB/S R/W/T"
+	summaryReadThroughputHeader  = "READ MB/S"
+	summaryWriteThroughputHeader = "WRITE MB/S"
 )
 
 // NewSummaryFormat returns a format for use with a summary Context
@@ -23,6 +28,8 @@ func NewSummaryFormat(source string, quiet bool) Format {
 			return defaultSummaryQuietFormat
 		}
 		return defaultSummaryTableFormat
+	case CSVFormatKey:
+		return defaultSummaryCSVFormat
 	case RawFormatKey:
 		if quiet {
 			return `name: {{.Name}}`
@@ -60,7 +67,27 @@ func (c *summaryContext) IOPS() string {
 	return fmt.Sprintf("%.2f/%.2f/%.2f", c.v.Read.IOPS, c.v.Write.IOPS, c.v.Trim.IOPS)
 }
 
-func (c *summaryContext) Bandwidth() string {
-	c.AddHeader(summaryBandwidthHeader)
+func (c *summaryContext) ReadIOPS() string {
+	c.AddHeader(summaryReadIOPSHeader)
+	return fmt.Sprintf("%.2f", c.v.Read.IOPS)
+}
+
+func (c *summaryContext) WriteIOPS() string {
+	c.AddHeader(summaryWriteIOPSHeader)
+	return fmt.Sprintf("%.2f", c.v.Write.IOPS)
+}
+
+func (c *summaryContext) Throughput() string {
+	c.AddHeader(summaryThroughputHeader)
 	return fmt.Sprintf("%.2f/%.2f/%.2f", KtoMB(c.v.Read.Bandwidth), KtoMB(c.v.Write.Bandwidth), KtoMB(c.v.Trim.Bandwidth))
+}
+
+func (c *summaryContext) ReadThroughput() string {
+	c.AddHeader(summaryReadThroughputHeader)
+	return fmt.Sprintf("%.2f", KtoMB(c.v.Read.Bandwidth))
+}
+
+func (c *summaryContext) WriteThroughput() string {
+	c.AddHeader(summaryWriteThroughputHeader)
+	return fmt.Sprintf("%.2f", KtoMB(c.v.Write.Bandwidth))
 }
