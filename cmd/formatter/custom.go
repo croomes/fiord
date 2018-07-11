@@ -5,7 +5,8 @@ import (
 )
 
 type subContext interface {
-	FullHeader() string
+	TabHeader() string
+	CSVHeader() string
 	AddHeader(header string)
 }
 
@@ -14,12 +15,20 @@ type HeaderContext struct {
 	header []string
 }
 
-// FullHeader returns the header as a string
-func (c *HeaderContext) FullHeader() string {
+// TabHeader returns the header as a tab-delimited string
+func (c *HeaderContext) TabHeader() string {
 	if c.header == nil {
 		return ""
 	}
 	return strings.Join(c.header, "\t")
+}
+
+// CSVHeader returns the header as a comma-delimited string
+func (c *HeaderContext) CSVHeader() string {
+	if c.header == nil {
+		return ""
+	}
+	return strings.Join(c.header, ",")
 }
 
 // AddHeader adds another column to the header
